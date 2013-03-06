@@ -5,19 +5,35 @@ var Inflater = require('./inflater')
 module.exports = InflateStream
 
 require('mkstream')(InflateStream)
+var Buffer = require('buffer').Buffer
 
-function InflateStream(stream){
-  var inflater = new Inflater()
+//ugly ugly ugly hack, need to use it until I find a better API
+var isBrowser = typeof window != 'undefined' && window.document && window.navigator && window.location
+
+function InflateStream(){
   var _this = this
-  stream.on('data', function(data){
-    var decompressedData = inflater.append(new Uint8Array(data))
-    if(decompressedData.buffer)
-      _this.emit('data', decompressedData.buffer)
-    else
-      _this.emit('error', new Error('Received response ' + decompressedData + ' from inflater'))
-  })
+  this.buffers = []
+  this.inflater = new Inflater()
 
-  stream.on('end', function(data){
-    _this.emit('end')
-  })
+  this.writable = true
+  this.readable = true
+}
+
+InflateStream.prototype.write = function(data){
+  this.buffers.push(data)
+
+  if(isBrowser){
+    var inflaterData = new Uint8Array(data.parent).subarray(data.offset, data.offset + data.length)
+  } else {
+    var inflaterData = new Uint8Array(data)
+  }
+  var outputData = this.inflater.append(inflaterData)
+  if(typeof outputData == 'object')
+    this.emit('data', outputData)
+  else
+    this.emit('error', 'Inflater emitted ' + outputData)
+}
+
+InflateStream.prototype.end = function(data){
+  this.emit('end')
 }

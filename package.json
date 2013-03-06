@@ -1,6 +1,6 @@
 {
   "name": "inflate-stream",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Inflates streams of DEFLATE-encoded data",
   "main": "index.js",
   "scripts": {
