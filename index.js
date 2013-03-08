@@ -30,10 +30,14 @@ InflateStream.prototype.write = function(data){
   var outputData = this.inflater.append(inflaterData)
   if(typeof outputData == 'object')
     this.emit('data', outputData)
-  else
+  else if (outputData != -1)
     this.emit('error', 'Inflater emitted ' + outputData)
 }
 
-InflateStream.prototype.end = function(data){
+InflateStream.prototype.end = function(){
+  this.emit('end')
+}
+
+InflateStream.prototype.destroy = function(){
   this.emit('end')
 }
